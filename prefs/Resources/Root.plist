@@ -14,6 +14,23 @@
         },
         {
             cell = PSGroupCell;
+            label = "Bias";
+            footerText = "Bias gesture recognition toward swipes or flicks.";
+        },
+        {
+            cell = PSSegmentCell;
+            label = "Bias";
+            default = "moderate";
+            defaults = "org.wuffs.flickplus";
+            key = flickRadius;
+            validValues = ("short", "moderate", "wide");
+            validTitles = ("Swipes", "No Bias", "Flicks");
+            shortTitles = ("Swipes", "No Bias", "Flicks");
+            detail = PSListItemsController;
+            PostNotification = "org.wuffs.flickplus/ReloadPrefs";
+        },
+        {
+            cell = PSGroupCell;
             label = "Symbol Colours";
             footerText = "Sets the colour of the symbols that appear on the top of the keys.";
         },

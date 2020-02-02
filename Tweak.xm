@@ -36,6 +36,7 @@ static NSMutableDictionary *kbPropCache;
 static NSString *lightSymbolsColour, *darkSymbolsColour;
 static bool hapticFeedbackEnabled = YES;
 static double symbolFontScale = 1.0;
+static NSInteger flickRadius = 35;
 
 static id kbFetchProp(NSString *key) {
 	id value = kbPropCache[key];
@@ -76,8 +77,10 @@ static bool lastFeedbackWasDown = false;
 	double deltaY = now.y - initial.y;
 	double distanceSq = (deltaX * deltaX) + (deltaY * deltaY);
 
-	// NSLog(@"delta:%f,%f distanceSq:%f", deltaX, deltaY, distanceSq);
-	if (deltaX < -30 || deltaX > 30 || distanceSq > (85*85))
+	//NSLog(@"delta:%f,%f distanceSq:%f %s", deltaX, deltaY, distanceSq, passedThreshold ? "SWIPE" : "FLICK");
+	double sqSnap = flickRadius * flickRadius * 6.25;
+	bool passedThreshold = deltaX < -1 * flickRadius || deltaX > flickRadius || distanceSq > sqSnap;
+	if (passedThreshold)
 		touchInfo.fpAllow = true;
 
 	if (touchInfo.fpAllow) {
@@ -310,7 +313,7 @@ static NSString *currencyFix(NSString *str) {
 			continue;
 
 		UIKBTree *keySet = [keylayout keySet];
-		
+
 		for (UIKBTree *list in keySet.subtrees) {
 			for (UIKBTree *key in list.subtrees) {
 				if (key.displayType == 0 || key.displayType == 8) {
@@ -567,12 +570,24 @@ static NSString *resolveColour(NSString *name) {
 	}
 }
 
+static NSInteger resolveFlickRadius(NSString * name) {
+    if ([name isEqualToString:@"short"]) {
+        return 25;
+    } else if ([name isEqualToString:@"moderate"]) {
+        return 35;
+    } else if ([name isEqualToString:@"wide"]) {
+        return 55;
+    } else {
+        return 35;
+    }
+}
 
 static void syncPreferences() {
 	lightSymbolsColour = resolveColour([preferences objectForKey:@"lightSymbols"]);
 	darkSymbolsColour = resolveColour([preferences objectForKey:@"darkSymbols"]);
 	hapticFeedbackEnabled = [preferences boolForKey:@"hapticFeedback"];
 	symbolFontScale = [preferences boolForKey:@"smallSymbols"] ? 0.7 : 1.0;
+    flickRadius = resolveFlickRadius([preferences objectForKey:@"flickRadius"]);
 	[kbPropCache removeAllObjects];
 	[[%c(UIKeyboardCache) sharedInstance] purge];
 	// maybe also [UIKBRenderer clearInternalCaches] ??
